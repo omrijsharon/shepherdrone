@@ -1,0 +1,30 @@
+# Global Parameters
+global:
+  simulation_time: 3000  # Total simulation time in seconds
+  dt: 0.01  # Time step in seconds
+  num_sheep: 50  # Number of sheep in the simulation
+  dimensions: 2  # Number of dimensions for the simulation (2 for ground, 3 for air)
+
+# Sheep Parameters
+sheep:
+  max_speed: 2.0  # Maximum speed of a sheep in m/s
+  max_speed_stddev: 0.2  # Standard deviation for the maximum speed of a sheep
+  perception_radius: 10.0  # Perception radius of a sheep in meters
+  perception_radius_stddev: 1.0  # Standard deviation for the perception radius
+  fear_radius: 5.0  # Radius within which a sheep will react to a drone
+  fear_radius_stddev: 0.5  # Standard deviation for the fear radius
+  alignment_strength: 0.1  # Weight for the alignment behavior
+  cohesion_strength: 0.1  # Weight for the cohesion behavior
+  separation_strength: 0.2  # Weight for the separation behavior
+  fear_strength: 2.0  # Weight for the fear response to drones
+  randomness_strength: 0.05  # Weight for the random movement component
+  leadership_strength: 0.3  # Weight for the tendency to follow the leader
+  leadership_perception_radius: 20.0  # Radius within which sheep perceive the leader
+  leadership_strength_stddev: 0.05  # Standard deviation for the leadership strength
+  leadership_perception_radius_stddev: 2.0  # Standard deviation for the leadership perception radius
+
+# Flock Behavior Parameters
+flock:
+  cohesion_perception_radius: 20.0  # Perception radius for the cohesion behavior in meters
+  alignment_perception_radius: 20.0  # Perception radius for the alignment behavior in meters
+  separation_perception_radius: 5.0  # Perception radius for the separation behavior in meters
