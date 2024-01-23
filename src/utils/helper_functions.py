@@ -1,4 +1,5 @@
 import numpy as np
+from math import sin, cos
 import matplotlib.pyplot as plt
 
 def calc_distance_vector_matrix(coordinates):
@@ -70,7 +71,42 @@ class SquareCell:
             for child in self.children:
                 child.plot()
 
+    import numpy as np
+    from math import sin, cos
 
+
+def euler_to_rotation_matrix(roll, pitch, yaw, division_factor=10):
+    # division factor is 10 when dealing with MSP_ATTITUDE
+    # Convert angles to radians
+    roll_rad = np.radians(roll / division_factor)
+    pitch_rad = np.radians(pitch / division_factor)
+    yaw_rad = np.radians(yaw / division_factor)
+
+    # Calculate sin and cos values
+    sin_roll = sin(roll_rad)
+    cos_roll = cos(roll_rad)
+    sin_pitch = sin(pitch_rad)
+    cos_pitch = cos(pitch_rad)
+    sin_yaw = sin(yaw_rad)
+    cos_yaw = cos(yaw_rad)
+
+    # Calculate rotation matrix
+    r11 = cos_yaw * cos_pitch
+    r12 = cos_yaw * sin_pitch * sin_roll - sin_yaw * cos_roll
+    r13 = cos_yaw * sin_pitch * cos_roll + sin_yaw * sin_roll
+    r21 = sin_yaw * cos_pitch
+    r22 = sin_yaw * sin_pitch * sin_roll + cos_yaw * cos_roll
+    r23 = sin_yaw * sin_pitch * cos_roll - cos_yaw * sin_roll
+    r31 = -sin_pitch
+    r32 = cos_pitch * sin_roll
+    r33 = cos_pitch * cos_roll
+
+    # Create rotation matrix
+    rMat = np.array([[r11, r12, r13],
+                     [r21, r22, r23],
+                     [r31, r32, r33]])
+
+    return rMat
 
 if __name__ == '__main__':
     N = 100

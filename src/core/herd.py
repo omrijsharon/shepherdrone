@@ -9,13 +9,13 @@ class Herd:
         self.k = k
         self.bounds = 10
         self.radius = radius_vector
-        self.velociradius = radius_vector * 4
+        self.velociradius = radius_vector
         if position is None:
             self.position = np.random.uniform(-self.bounds/2, self.bounds/2, size=(n_particles, dim))
         else:
             self.position = position
         if velocity is None:
-            self.velocity = np.random.uniform(-1, 1, size=(n_particles, dim))
+            self.velocity = 0.00001 * np.random.uniform(-1, 1, size=(n_particles, dim))
         else:
             self.velocity = velocity
 
@@ -88,8 +88,16 @@ class Herd:
         # add a force that aligns the particles'
         self.calculate_velocidist_vector_matrix()
         velocimask = self.calculate_velocimask()
-        accl += - 10 * (velocimask * self.velocidist_vector_matrix).sum(axis=1)
+        velocity_force = (velocimask * self.velocidist_vector_matrix).sum(axis=1)
+        # normalize velocity_force to unit vector where the norm is greater than 1
+        norm_velocity_force = np.linalg.norm(velocity_force, axis=1)
+        velocity_force[norm_velocity_force > 1] = velocity_force[norm_velocity_force > 1] / norm_velocity_force[norm_velocity_force > 1][:, np.newaxis]
+        accl += - 1e3 * velocity_force
+        print(accl)
         self.velocity += accl * self.dt
+        # normalize velocity to unit vector where the norm is greater than 1
+        norm_velocity = np.linalg.norm(self.velocity, axis=1)
+        self.velocity[norm_velocity > 1] = self.velocity[norm_velocity > 1] / norm_velocity[norm_velocity > 1][:, np.newaxis]
         self.position += self.velocity * self.dt
 
     def plot(self):
@@ -104,10 +112,10 @@ class Herd:
 
 
 if __name__ == '__main__':
-    dt = 1e-2
-    k = -10
+    dt = 5e-2
+    k = 0e1
     n_particles = 20
-    radius_vector = np.random.uniform(0.1, 1, size=n_particles)
+    radius_vector = 1+ np.random.uniform(0.3, 1.5, size=n_particles)
     herd = Herd(n_particles=n_particles, dim=2, dt=dt, k=k, radius_vector=radius_vector)
     for _ in range(1000):
         herd.update()

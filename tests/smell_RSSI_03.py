@@ -23,12 +23,12 @@ class Chaser:
         self.prev_rssi: float = -100
         self.done: bool = False
         self.bounds = 100
-        self.rssi_filter = 0.4
+        self.rssi_filter = 0.6
 
     def reset(self, position, target: Target):
         self.position = position
         self.velocity = np.zeros(self.dim)
-        self.prev_rssi = self.distance2rssi(self.distance_to(target), noise=1e-6)
+        self.prev_rssi = self.distance2rssi(self.distance_to(target), noise=1e-2)
         self.done: bool = False
         return self.velocity, self.prev_rssi
 
@@ -71,7 +71,7 @@ def pol2cart(theta, rho):
 if __name__ == '__main__':
     dim = 3
     dt = 1e-1
-    sub_step_size = 25
+    sub_step_size = 50
     initial_altitude = 15
     env = Chaser(radius=0.01, dim=dim, dt=dt)
     target_random_position = 0.1 * np.random.uniform(-1, 1, size=dim)
@@ -117,6 +117,9 @@ if __name__ == '__main__':
         for i in range(sub_step_size):
             vel, rssi, done, info = env.step(force_vector, target)
             rssi_array[i] = rssi
+        if rssi_array.mean() > -14:
+            sub_step_size = 20
+            print("sub_step_size changed to 10")
         prev_diff_rssi = diff_rssi.copy()
         diff_rssi = rssi - prev_rssi
         prev_rssi = rssi.copy()

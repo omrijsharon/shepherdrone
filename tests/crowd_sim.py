@@ -16,7 +16,7 @@ def calc_interaction_matrix(position, orientation, radius_matrix, cos_threshold)
     return interaction_matrix
 
 if __name__ == '__main__':
-    N = 100
+    N = 20
     dim = 2
     position = np.random.uniform(-1, 1, size=(dim, N))
     velocity = 0.5*np.random.uniform(-1, 1, size=(dim, N))
@@ -27,30 +27,40 @@ if __name__ == '__main__':
     radius = 0.1
     radius = np.random.uniform(radius, radius, size=N)
     radius_matrix = radius + radius[:, np.newaxis] # this is the radius matrix (N x N). it is symmetric and the diagonal is the sum of the radii
-    dt = 8e-3
+    dt = 3e-2
     bounds = 1
-    k = 1e2
-    goal_coef = 50
-    fov = np.pi*1
+    k = 5e3
+    goal_coef = 25
+    fov = np.pi*1.9
     cos_threshold = np.cos(fov/2)
     interaction_matrix = calc_interaction_matrix(position, orientation, radius_matrix, cos_threshold)
 
-    external_force = 0*np.array([1, 0])
-
+    external_force = 0 * np.array([1, 0])
+    # calculate the center of mass point for all the particles, assuming they have the same mass
+    center_of_mass = position.mean(axis=1)
+    turn_dir_vector = np.random.randint(0, 2, size=N) * 2 - 1
     plt.ion()
     for i in range(10000):
         plt.clf()
         interaction_matrix = calc_interaction_matrix(position, orientation, radius_matrix, cos_threshold)
         # add a force that attracts the particles to the center
         f_center = -goal_coef * (position - goal)
-        accl = k * (interaction_matrix * calc_distance_vector_matrix(position)).sum(axis=1) + f_center + external_force[:, np.newaxis] + 0.00001*np.random.uniform(-1, 1, size=(dim, N))
-        velocity += accl * dt - 0.8 * velocity
+
+        # interaction:
+        interaction = (interaction_matrix * calc_distance_vector_matrix(position)).sum(axis=1)
+        interaction[0, :] *= turn_dir_vector
+        accl = k * interaction + f_center + external_force[:, np.newaxis] + 0.00001*np.random.uniform(-1, 1, size=(dim, N))
+        norm_accl = np.linalg.norm(accl, axis=0)
+        accl[:, norm_accl > 1] = accl[:, norm_accl > 1] / norm_accl[norm_accl > 1]
+        velocity += accl * dt - 0.9 * velocity
         position += velocity * dt
         # wrap position around the bounds
         # position[position > bounds] -= 2 * bounds
         # position[position < -bounds] += 2 * bounds
+        center_of_mass = position.mean(axis=1) *0
         orientation = calc_orientation(velocity, orientation)
         if i % 10 == 0:
+            turn_dir_vector = np.random.randint(0, 2, size=N) * 2 - 1
             # draw particle's goals in pale green
             plt.scatter(goal[0], goal[1], s=radius * 200 * bounds, alpha=0.2, color='g')
             plt.scatter(position[0], position[1], s=radius * 200 * bounds, alpha=0.8)
@@ -72,8 +82,8 @@ if __name__ == '__main__':
                 plt.plot([position[0, j], goal[0, j]], [position[1, j], goal[1, j]], color='g', alpha=0.2)
             # square plot
             plt.axis('square')
-            plt.xlim(-bounds, bounds)
-            plt.ylim(-bounds, bounds)
+            plt.xlim(-bounds - center_of_mass[0], bounds - center_of_mass[0])
+            plt.ylim(-bounds - center_of_mass[1], bounds - center_of_mass[1])
             plt.pause(0.01)
     plt.show()
 
